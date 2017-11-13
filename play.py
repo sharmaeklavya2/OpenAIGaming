@@ -124,10 +124,10 @@ def main():
         try:
             while not input_state.user_stop and (args.force_continue or not done):
                 env.render()
-                action = get_action(input_state)
-                state2, reward, done, info = env.step(action)
                 if args.delay is not None:
                     time.sleep(args.delay / 1000)
+                action = get_action(input_state)
+                state2, reward, done, info = env.step(action)
                 t += 1
                 score += reward
                 state = state2
