@@ -6,6 +6,7 @@ Play OpenAI gym's games using the keyboard.
 
 import sys
 import os
+from os.path import join as pjoin
 import time
 import math
 import random
@@ -13,6 +14,7 @@ import logging
 import argparse
 import json
 
+import numpy as np
 import gym
 from gym import wrappers
 from pynput.keyboard import Key, Listener
@@ -76,7 +78,7 @@ def main():
     parser.add_argument('--force-continue', action='store_true', default=False,
         help="Keep playing even after 'Game over'")
     parser.add_argument('--delay', type=float, help='Extra delay between frames in milliseconds')
-#   parser.add_argument('-o', '--output', help='Path to file in which gameplay will be stored')
+    parser.add_argument('-o', '--output', help='Output directory path')
     args = parser.parse_args()
 
     # Get keymap
@@ -101,6 +103,13 @@ def main():
     score = 0
     input_state = InputState(env.action_space, keymap)
     print('Action space:', env.action_space)
+    print('Observation space:', env.observation_space)
+    out_dir = args.output
+    if out_dir is not None:
+        os.makedirs(out_dir, exist_ok=True)
+        states = [state]
+        actions = []
+        rewards = []
 
     def keypress_callback(key):
         input_state.pressed_key = key
@@ -127,6 +136,10 @@ def main():
                 time.sleep(args.delay / 1000)
             action = get_action(input_state)
             state2, reward, done, info = env.step(action)
+            if out_dir is not None:
+                states.append(state2)
+                rewards.append(reward)
+                actions.append(action)
             t += 1
             score += reward
             state = state2
@@ -134,7 +147,25 @@ def main():
 
     print('Time:', t)
     print('Score:', score)
-
+    if out_dir is not None:
+        states = np.array(states)
+        rewards = np.array(rewards)
+        actions = np.array(actions)
+        metadata = {
+            'time': t,
+            'score': score,
+            'done': done,
+            'observation_shape': list(states.shape[1:]),
+            'observation_dtype': states.dtype.name,
+            'action_shape': list(actions.shape[1:]),
+            'action_dtype': actions.dtype.name,
+            'reward_dtype': rewards.dtype.name,
+        }
+        with open(pjoin(out_dir, 'metadata.json'), 'w') as fobj:
+            json.dump(metadata, fobj, indent=4, sort_keys=True)
+        np.save(pjoin(out_dir, 'states.npy'), states)
+        np.save(pjoin(out_dir, 'actions.npy'), actions)
+        np.save(pjoin(out_dir, 'rewards.npy'), rewards)
 
 if __name__ == '__main__':
     main()
