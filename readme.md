@@ -1,6 +1,6 @@
 # OpenAI Gaming
 
-Play games in the OpenAI gym using the keyboard.
+Play games in the [OpenAI gym](https://gym.openai.com/envs/) using the keyboard.
 
 Example invocation: `python3 play.py CartPole-v1 --delay=50`
 
@@ -20,9 +20,16 @@ Values of the mapping can be:
 
 * a number
 * an array of floats (if actions are multi-dimensional)
-* the values `"next"`, `"prev"`, `"random"`.
+* `"next"` or `"prev"`: If actions are discrete, they are numbered from `0` to `n-1`.
+  If the action performed in the previous instant was `x`, `"next"` will perform the action `(x+1)%n`
+  and `"prev"` will perform the action `(x-1)%n`.
+* `"same"`: Perform the same action which was performed in the last instant.
+* `"random"`: Randomly sample an action from the action space.
 
-Apart from this, for discrete-action games, unmapped keys from 0 to 9 are mapped to corresponding actions of the same number.
+When no valid key is pressed, the action performed is the one corresponding to `"default"`.
+If `"default"` action is not specified, it is taken as `"random"`.
+
+For discrete-action games, unmapped keys from 0 to 9 are mapped to corresponding actions of the same number.
 This can be a good way to explore actions in a game and devise an appropriate keymap for it.
 
 ## List all games
