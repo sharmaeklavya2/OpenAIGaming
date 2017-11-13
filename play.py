@@ -121,21 +121,19 @@ def main():
             pass
 
     with Listener(on_press=keypress_callback, on_release=keyrelease_callback) as listener:
-        try:
-            while not input_state.user_stop and (args.force_continue or not done):
-                env.render()
-                if args.delay is not None:
-                    time.sleep(args.delay / 1000)
-                action = get_action(input_state)
-                state2, reward, done, info = env.step(action)
-                t += 1
-                score += reward
-                state = state2
-        except KeyboardInterrupt:
-            pass
-        print('Time:', t)
-        print('Score:', score)
-        env.close()
+        while not input_state.user_stop and (args.force_continue or not done):
+            env.render()
+            if args.delay is not None:
+                time.sleep(args.delay / 1000)
+            action = get_action(input_state)
+            state2, reward, done, info = env.step(action)
+            t += 1
+            score += reward
+            state = state2
+    env.close()
+
+    print('Time:', t)
+    print('Score:', score)
 
 
 if __name__ == '__main__':
